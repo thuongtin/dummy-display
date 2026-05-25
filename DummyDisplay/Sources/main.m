@@ -1,5 +1,6 @@
 #import <AppKit/AppKit.h>
 #import "AppDelegate.h"
+#import "AppPreferences.h"
 #import "LoginItemController.h"
 #import "VirtualDisplayController.h"
 
@@ -43,8 +44,24 @@ static int runSmokeTest(void) {
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         for (int index = 1; index < argc; index++) {
+            if (strcmp(argv[index], "--display-count") == 0) {
+                printf("%u\n", activeDisplayCount());
+                return 0;
+            }
             if (strcmp(argv[index], "--smoke-test") == 0) {
                 return runSmokeTest();
+            }
+            if (strcmp(argv[index], "--prefs-status") == 0) {
+                AppPreferences *preferences = [[AppPreferences alloc] initWithDefaults:NSUserDefaults.standardUserDefaults];
+                printf("%s\n", preferences.debugStatusText.UTF8String);
+                return 0;
+            }
+            if (strcmp(argv[index], "--auto-start-enable") == 0 || strcmp(argv[index], "--auto-start-disable") == 0) {
+                AppPreferences *preferences = [[AppPreferences alloc] initWithDefaults:NSUserDefaults.standardUserDefaults];
+                preferences.autoStartEnabled = strcmp(argv[index], "--auto-start-enable") == 0;
+                [preferences save];
+                printf("%s\n", preferences.debugStatusText.UTF8String);
+                return 0;
             }
             if (strcmp(argv[index], "--login-status") == 0) {
                 LoginItemController *controller = [LoginItemController new];

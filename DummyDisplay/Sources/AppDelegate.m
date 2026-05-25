@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import "AppPreferences.h"
 #import "LoginItemController.h"
 #import "VirtualDisplayController.h"
 
@@ -6,15 +7,15 @@
 @property(nonatomic, strong) NSStatusItem *statusItem;
 @property(nonatomic, strong) NSMenu *statusMenu;
 @property(nonatomic, strong) VirtualDisplayController *displayController;
+@property(nonatomic, strong) AppPreferences *preferences;
 @property(nonatomic, strong) NSMenuItem *statusMenuItem;
 @property(nonatomic, strong) NSMenuItem *startMenuItem;
 @property(nonatomic, strong) NSMenuItem *stopMenuItem;
 @property(nonatomic, strong) NSMenuItem *hiDPIMenuItem;
 @property(nonatomic, strong) NSMenuItem *loginItemMenuItem;
+@property(nonatomic, strong) NSMenuItem *autoStartMenuItem;
 @property(nonatomic, strong) NSArray<NSMenuItem *> *presetMenuItems;
 @property(nonatomic, strong) LoginItemController *loginItemController;
-@property(nonatomic) DummyDisplayPreset selectedPreset;
-@property(nonatomic) BOOL hiDPIEnabled;
 @end
 
 @implementation AppDelegate
@@ -24,11 +25,11 @@
 
     self.displayController = [VirtualDisplayController new];
     self.loginItemController = [LoginItemController new];
-    self.selectedPreset = DummyDisplayPreset1440p;
-    self.hiDPIEnabled = YES;
+    self.preferences = [[AppPreferences alloc] initWithDefaults:NSUserDefaults.standardUserDefaults];
 
     [self buildMenuBarItem];
     [self updateMenu];
+    [self autoStartDisplayIfNeeded];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
@@ -76,6 +77,12 @@
     self.hiDPIMenuItem.target = self;
     [self.statusMenu addItem:self.hiDPIMenuItem];
 
+    self.autoStartMenuItem = [[NSMenuItem alloc] initWithTitle:@"Auto Start Display"
+                                                        action:@selector(toggleAutoStart:)
+                                                 keyEquivalent:@""];
+    self.autoStartMenuItem.target = self;
+    [self.statusMenu addItem:self.autoStartMenuItem];
+
     self.loginItemMenuItem = [[NSMenuItem alloc] initWithTitle:@"Launch at Login"
                                                         action:@selector(toggleLaunchAtLogin:)
                                                  keyEquivalent:@""];
@@ -108,13 +115,22 @@
 }
 
 - (void)selectPreset:(NSMenuItem *)sender {
-    self.selectedPreset = (DummyDisplayPreset)sender.tag;
+    self.preferences.selectedPreset = (DummyDisplayPreset)sender.tag;
+    [self.preferences save];
     [self updateMenu];
 }
 
 - (void)toggleHiDPI:(id)sender {
     (void)sender;
-    self.hiDPIEnabled = !self.hiDPIEnabled;
+    self.preferences.hiDPIEnabled = !self.preferences.hiDPIEnabled;
+    [self.preferences save];
+    [self updateMenu];
+}
+
+- (void)toggleAutoStart:(id)sender {
+    (void)sender;
+    self.preferences.autoStartEnabled = !self.preferences.autoStartEnabled;
+    [self.preferences save];
     [self updateMenu];
 }
 
@@ -134,8 +150,8 @@
     (void)sender;
 
     NSError *error = nil;
-    BOOL ok = [self.displayController startWithPreset:self.selectedPreset
-                                                hiDPI:self.hiDPIEnabled
+    BOOL ok = [self.displayController startWithPreset:self.preferences.selectedPreset
+                                                hiDPI:self.preferences.hiDPIEnabled
                                                 error:&error];
     if (!ok) {
         [self showError:error.localizedDescription];
@@ -155,13 +171,14 @@
     self.startMenuItem.enabled = !active;
     self.stopMenuItem.enabled = active;
     self.hiDPIMenuItem.enabled = !active;
-    self.hiDPIMenuItem.state = self.hiDPIEnabled ? NSControlStateValueOn : NSControlStateValueOff;
+    self.hiDPIMenuItem.state = self.preferences.hiDPIEnabled ? NSControlStateValueOn : NSControlStateValueOff;
+    self.autoStartMenuItem.state = self.preferences.autoStartEnabled ? NSControlStateValueOn : NSControlStateValueOff;
     self.loginItemMenuItem.title = self.loginItemController.statusText;
     self.loginItemMenuItem.state = self.loginItemController.isEnabled ? NSControlStateValueOn : NSControlStateValueOff;
 
     for (NSMenuItem *item in self.presetMenuItems) {
         item.enabled = !active;
-        item.state = item.tag == self.selectedPreset ? NSControlStateValueOn : NSControlStateValueOff;
+        item.state = item.tag == self.preferences.selectedPreset ? NSControlStateValueOn : NSControlStateValueOff;
     }
 
     if (@available(macOS 11.0, *)) {
@@ -169,6 +186,27 @@
     } else {
         self.statusItem.button.title = active ? @"DD*" : @"DD";
     }
+}
+
+- (void)autoStartDisplayIfNeeded {
+    if (!self.preferences.autoStartEnabled || self.displayController.isActive) {
+        return;
+    }
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (self.displayController.isActive) {
+            return;
+        }
+
+        NSError *error = nil;
+        BOOL ok = [self.displayController startWithPreset:self.preferences.selectedPreset
+                                                    hiDPI:self.preferences.hiDPIEnabled
+                                                    error:&error];
+        if (!ok) {
+            [self showError:error.localizedDescription];
+        }
+        [self updateMenu];
+    });
 }
 
 - (void)showError:(NSString *)message {

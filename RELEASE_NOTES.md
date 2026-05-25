@@ -1,3 +1,23 @@
+# Dummy Display 0.1.2
+
+Adds Auto Start Display on launch.
+
+## Changes
+
+- Adds an `Auto Start Display` menu item.
+- Persists preset, HiDPI, and auto-start preferences with `NSUserDefaults`.
+- Automatically creates the virtual display on app launch when auto-start is enabled.
+- Adds CLI diagnostics and test hooks for preferences and display count.
+
+## Verify Auto Start
+
+```bash
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --auto-start-enable
+open "build/Dummy Display.app"
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --display-count
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --auto-start-disable
+```
+
 # Dummy Display 0.1.1
 
 Fixes Launch at Login when macOS reports `SMAppService.mainAppService` as `App Not Found`.

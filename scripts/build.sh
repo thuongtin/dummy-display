@@ -18,6 +18,7 @@ clang \
   -fobjc-arc \
   "$ROOT_DIR/DummyDisplay/Sources/main.m" \
   "$ROOT_DIR/DummyDisplay/Sources/AppDelegate.m" \
+  "$ROOT_DIR/DummyDisplay/Sources/AppPreferences.m" \
   "$ROOT_DIR/DummyDisplay/Sources/LoginItemController.m" \
   "$ROOT_DIR/DummyDisplay/Sources/VirtualDisplayController.m" \
   -framework AppKit \

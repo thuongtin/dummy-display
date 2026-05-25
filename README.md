@@ -10,6 +10,7 @@ It is useful when you need a headless, remote, or extra workspace display withou
 - Creates and removes a real virtual display.
 - Resolution presets: `1920 x 1080`, `2560 x 1440`, `3840 x 2160`.
 - HiDPI toggle.
+- Auto Start Display toggle.
 - Launch at Login toggle.
 - Generated app icon.
 
@@ -47,7 +48,7 @@ build/Dummy Display.app
 open "build/Dummy Display.app"
 ```
 
-Use the menu bar display icon to choose a preset, toggle HiDPI, start the virtual display, stop it, and enable launch at login.
+Use the menu bar display icon to choose a preset, toggle HiDPI, enable auto-start, start the virtual display, stop it, and enable launch at login.
 
 The build script also generates the app icon at `DummyDisplay/Resources/AppIcon.icns`.
 
@@ -90,6 +91,14 @@ You can also verify the toggle path from CLI:
 ```bash
 "build/Dummy Display.app/Contents/MacOS/Dummy Display" --login-enable
 "build/Dummy Display.app/Contents/MacOS/Dummy Display" --login-disable
+```
+
+Check and toggle Auto Start Display:
+
+```bash
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --prefs-status
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --auto-start-enable
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --auto-start-disable
 ```
 
 ## License
