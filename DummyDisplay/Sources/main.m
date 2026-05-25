@@ -1,5 +1,6 @@
 #import <AppKit/AppKit.h>
 #import "AppDelegate.h"
+#import "LoginItemController.h"
 #import "VirtualDisplayController.h"
 
 static uint32_t activeDisplayCount(void) {
@@ -44,6 +45,23 @@ int main(int argc, const char *argv[]) {
         for (int index = 1; index < argc; index++) {
             if (strcmp(argv[index], "--smoke-test") == 0) {
                 return runSmokeTest();
+            }
+            if (strcmp(argv[index], "--login-status") == 0) {
+                LoginItemController *controller = [LoginItemController new];
+                printf("%s\n", controller.debugStatusText.UTF8String);
+                return 0;
+            }
+            if (strcmp(argv[index], "--login-enable") == 0 || strcmp(argv[index], "--login-disable") == 0) {
+                LoginItemController *controller = [LoginItemController new];
+                NSError *error = nil;
+                BOOL enable = strcmp(argv[index], "--login-enable") == 0;
+                BOOL ok = [controller setEnabled:enable error:&error];
+                if (!ok) {
+                    fprintf(stderr, "%s\n", error.localizedDescription.UTF8String);
+                    return 4;
+                }
+                printf("%s\n", controller.debugStatusText.UTF8String);
+                return 0;
             }
         }
 

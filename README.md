@@ -51,6 +51,8 @@ Use the menu bar display icon to choose a preset, toggle HiDPI, start the virtua
 
 The build script also generates the app icon at `DummyDisplay/Resources/AppIcon.icns`.
 
+Launch at Login uses `SMAppService` when macOS accepts the app bundle. If macOS reports the app as not found, Dummy Display falls back to a per-user LaunchAgent in `~/Library/LaunchAgents`.
+
 ## Install A Release Build
 
 Download `Dummy-Display.app.zip` from the GitHub release, unzip it, then move the app to `/Applications`.
@@ -76,6 +78,19 @@ Run the runtime smoke test:
 ```
 
 Expected result: the active display count increases by one, then returns to the original count.
+
+Check launch-at-login diagnostics:
+
+```bash
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --login-status
+```
+
+You can also verify the toggle path from CLI:
+
+```bash
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --login-enable
+"build/Dummy Display.app/Contents/MacOS/Dummy Display" --login-disable
+```
 
 ## License
 

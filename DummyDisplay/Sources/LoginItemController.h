@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, readonly) NSString *statusText;
 
 - (BOOL)setEnabled:(BOOL)enabled error:(NSError **)error;
+- (NSString *)debugStatusText;
 
 @end
 
